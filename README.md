@@ -1,8 +1,21 @@
 # 🛵 Cravingly — Guilt-Free Dopamine Food Delivery App
 
+> **Live Website Demo:**  
+> 👉 [https://sandeshnaik081-alt.github.io/cravingly/](https://sandeshnaik081-alt.github.io/cravingly/)
+
+[![Live Demo](https://img.shields.io/badge/Live_App-Click_Here_to_Launch-FA5838?style=for-the-badge&logo=rocket)](https://sandeshnaik081-alt.github.io/cravingly/)
+[![GitHub Pages](https://img.shields.io/badge/Hosted_With-GitHub_Pages-3D7A5A?style=for-the-badge&logo=github)](https://sandeshnaik081-alt.github.io/cravingly/)
+
 A warm, charming, and delightful Single Page Application (SPA) designed to trigger the psychological joy and dopamine rush of ordering your favorite food—with **0 real calories**, **₹0 charged**, and pure serotonin!
 
 Built with **React**, **Tailwind CSS**, **Leaflet.js / OpenStreetMap**, and **Web Audio API**.
+
+---
+
+## 🌐 Quick Access
+
+Click the link below to open the application directly in your browser:  
+🔗 **[Launch Cravingly Web App](https://sandeshnaik081-alt.github.io/cravingly/)**
 
 ---
 
@@ -31,12 +44,6 @@ Built with **React**, **Tailwind CSS**, **Leaflet.js / OpenStreetMap**, and **We
   - Native dual-tone Web Audio doorbell chime (*Ding-Dong: 659Hz -> 523Hz*).
   - Celebratory confetti pop.
   - Animated savings scorecard tracking money saved and calories dodged in `localStorage`.
-
----
-
-## 🚀 Live Demo
-
-You can run this app locally by opening `index.html` directly in any web browser, or via GitHub Pages.
 
 ---
 
