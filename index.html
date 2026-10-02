@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cravingly — Guilt-Free Dopamine Food Delivery</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+          },
+          colors: {
+            cream: {
+              50: '#FDFBF7',
+              100: '#F9F5EE',
+              200: '#F2EBDC',
+              300: '#E8DCBF'
+            },
+            coral: {
+              400: '#FF7D66',
+              500: '#FA5838',
+              600: '#E84524',
+              700: '#C83214'
+            },
+            honey: {
+              400: '#FFC542',
+              500: '#F5A623',
+              600: '#D98205'
+            },
+            sage: {
+              50: '#F2F7F2',
+              100: '#E2EDE3',
+              500: '#3D7A5A',
+              600: '#2E5E44'
+            }
+          },
+          boxShadow: {
+            'pillowy': '0 8px 30px rgba(120, 80, 40, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)',
+            'pillowy-lg': '0 16px 40px rgba(120, 80, 40, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06)',
+            'warm-glow': '0 10px 25px -5px rgba(250, 88, 56, 0.35)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & Babel for instant self-contained execution -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Lucide Icons standalone UMD -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      background-color: #FBF8F2;
+      color: #2D251E;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #E2DACB; border-radius: 9999px; }
+    
+    @keyframes floatGentle {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+    }
+    .animate-float { animation: floatGentle 3s ease-in-out infinite; }
+
+    @keyframes pulseSoft {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.02); opacity: 0.95; }
+    }
+    .animate-pulse-soft { animation: pulseSoft 2.5s infinite ease-in-out; }
+
+    .leaflet-container {
+      width: 100%;
+      height: 100%;
+      border-radius: 1.25rem;
+      z-index: 1;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen bg-[#FAF6EE] flex items-center justify-center p-0 sm:p-4 md:p-6 antialiased selection:bg-coral-100 selection:text-coral-700">
+
+  <div id="root" class="w-full flex justify-center"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- Web Audio API Chime (659Hz E5 -> 523Hz C5) ---
+    function playWarmDoorbellChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+
+        // 1st note: E5 (659.25Hz) - bright cheerful greeting
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'triangle';
+        osc1.frequency.setValueAtTime(659.25, ctx.currentTime);
+        gain1.gain.setValueAtTime(0.35, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(ctx.currentTime);
+        osc1.stop(ctx.currentTime + 0.9);
+
+        // 2nd note: C5 (523.25Hz) - deep warm resolution
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(523.25, ctx.currentTime + 0.35);
+        gain2.gain.setValueAtTime(0.35, ctx.currentTime + 0.35);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.5);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(ctx.currentTime + 0.35);
+        osc2.stop(ctx.currentTime + 1.5);
+      } catch (err) {
+        console.warn("Audio note played in silence:", err);
+      }
+    }
+
+    // --- Authentic Food Catalog ---
+    const FOOD_MENU = [
+      // Real Indian Cuisine
+      {
+        id: 'ind-biryani',
+        category: 'Real Indian',
+        name: 'Hyderabadi Handi Dum Biryani',
+        restaurant: 'Nizami Dastarkhwan Heritage',
+        rating: 4.9,
+        reviews: '2.4k',
+        prepTime: '25-30 min',
+        calories: 780,
+        price: 390,
+        badge: "Chef's Pride",
+        image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&auto=format&fit=crop&q=80',
+        description: 'Slow-cooked in a sealed clay handi with long-grain basmati, saffron dew, tender marinated pieces, served with spicy mirchi ka salan and cooling cucumber raita.'
+      },
+      {
+        id: 'ind-butter-chicken',
+        category: 'Real Indian',
+        name: 'Old Delhi Butter Chicken & Garlic Naan',
+        restaurant: 'Haveli 1947 Rasoi',
+        rating: 4.9,
+        reviews: '3.1k',
+        prepTime: '20-25 min',
+        calories: 890,
+        price: 440,
+        badge: "Most Craved",
+        image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=800&auto=format&fit=crop&q=80',
+        description: 'Velvety makhani gravy enriched with churned butter and Kashmiri chili, paired with two blistered, piping-hot garlic butter naans.'
+      },
+      {
+        id: 'ind-paneer-butter',
+        category: 'Real Indian',
+        name: 'Shahi Paneer Butter Masala',
+        restaurant: 'Brijwasi Khansama',
+        rating: 4.8,
+        reviews: '1.8k',
+        prepTime: '18-22 min',
+        calories: 720,
+        price: 360,
+        badge: "Pure Comfort",
+        image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800&auto=format&fit=crop&q=80',
+        description: 'Melt-in-mouth cottage cheese simmered in a slow-reduced cashew, cardamom, and ripe Roma tomato velvet sauce with fenugreek leaves.'
+      },
+      {
+        id: 'ind-masala-dosa',
+        category: 'Real Indian',
+        name: 'Ghee Podi Masala Dosa',
+        restaurant: 'Malgudi Heritage Tiffins',
+        rating: 4.9,
+        reviews: '4.2k',
+        prepTime: '12-15 min',
+        calories: 460,
+        price: 190,
+        badge: "Crispy Gold",
+        image: 'https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=800&auto=format&fit=crop&q=80',
+        description: 'Paper-thin golden crepe roasted in pure A2 cultured ghee, smeared with spicy gun-powder podi, stuffed with spiced potato mash and 3 fresh chutneys.'
+      },
+      {
+        id: 'ind-gulab-jamun',
+        category: 'Real Indian',
+        name: 'Warm Shahi Gulab Jamun (4 pcs)',
+        restaurant: 'Mithai Mahal Confectionery',
+        rating: 4.9,
+        reviews: '1.5k',
+        prepTime: '10 min',
+        calories: 420,
+        price: 160,
+        badge: "Sweet Hug",
+        image: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=800&auto=format&fit=crop&q=80',
+        description: 'Golden fried khoya dumplings steeped in warm saffron and crushed cardamom rose syrup, garnished with toasted pistachio slivers.'
+      },
+
+      // Street Food & Fast Food
+      {
+        id: 'ff-smashburger',
+        category: 'Fast Food',
+        name: 'Double Smashed Brioche Cheeseburger',
+        restaurant: 'Bun & Barrel Artisans',
+        rating: 4.9,
+        reviews: '2.9k',
+        prepTime: '15-20 min',
+        calories: 940,
+        price: 420,
+        badge: "Juicy Sizzle",
+        image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&auto=format&fit=crop&q=80',
+        description: 'Two crispy lace-edged smashed patties with triple melted sharp cheddar, caramelized shallots, dill pickles, and golden secret house relish on toasted brioche.'
+      },
+      {
+        id: 'ff-peri-fries',
+        category: 'Fast Food',
+        name: 'Loaded Truffle & Peri-Peri Crinkle Fries',
+        restaurant: 'The Golden Crisp Co.',
+        rating: 4.8,
+        reviews: '1.9k',
+        prepTime: '12-15 min',
+        calories: 520,
+        price: 210,
+        badge: "Crunch Addict",
+        image: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=800&auto=format&fit=crop&q=80',
+        description: 'Extra crispy crinkle cuts tossed in smoky African bird’s eye peri-peri spice dust, drizzled with truffle oil and served with herb garlic mayo.'
+      },
+      {
+        id: 'ff-pizza',
+        category: 'Fast Food',
+        name: 'Wood-Fired Truffle Margherita Pizza',
+        restaurant: 'Casa Della Forno',
+        rating: 4.9,
+        reviews: '3.4k',
+        prepTime: '20 min',
+        calories: 840,
+        price: 580,
+        badge: "Wood Fired",
+        image: 'https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=800&auto=format&fit=crop&q=80',
+        description: 'San Marzano tomato base, hand-torn fresh fior di latte mozzarella, fragrant sweet basil, black truffle reduction, and a leopard-spotted 48hr sourdough crust.'
+      },
+
+      // Cozy Dinner & Bowls
+      {
+        id: 'gm-fettuccine',
+        category: 'Cozy Dinner',
+        name: 'Creamy Wild Mushroom Truffle Fettuccine',
+        restaurant: 'Trattoria Silvestri',
+        rating: 4.9,
+        reviews: '1.7k',
+        prepTime: '20-25 min',
+        calories: 810,
+        price: 640,
+        badge: "Chef's Kiss",
+        image: 'https://images.unsplash.com/photo-1621996346565-e3d5d6281290?w=800&auto=format&fit=crop&q=80',
+        description: 'Handcrafted bronze-cut fettuccine swirled in porcini and wild chanterelle cream sauce, aged 24-month Parmigiano-Reggiano, and black summer truffle shavings.'
+      },
+      {
+        id: 'gm-sushi',
+        category: 'Cozy Dinner',
+        name: 'Tokyo Salmon & Tuna Dragon Roll Platter',
+        restaurant: 'Komorebi Sushi Studio',
+        rating: 4.9,
+        reviews: '2.1k',
+        prepTime: '22-26 min',
+        calories: 590,
+        price: 790,
+        badge: "Artisan Roll",
+        image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800&auto=format&fit=crop&q=80',
+        description: 'Torched king salmon, fresh bluefin tuna, Hass avocado, crisp tempura prawn, topped with yuzu tobiko pearls and sweet unagi reduction with pickled ginger.'
+      }
+    ];
+
+    // Real Urban Route: Koramangala 4th Block to Indiranagar 100ft Road (Bengaluru)
+    const BENGALURU_ROUTE = [
+      [12.9344, 77.6253], // 0% Restaurant: Koramangala 4th Block
+      [12.9385, 77.6268],
+      [12.9460, 77.6288], // Intermediate Ring Road
+      [12.9555, 77.6335], // Domlur Flyover
+      [12.9642, 77.6372], // Indiranagar Entry
+      [12.9715, 77.6405], // 100ft Road Corridor
+      [12.9782, 77.6415]  // 100% Home Destination: Indiranagar
+    ];
+
+    // --- Main Application ---
+    function CravinglyApp() {
+      // Lifetime metrics stored in localStorage
+      const [metrics, setMetrics] = useState(() => {
+        try {
+          const stored = localStorage.getItem('cravingly_lifetime_metrics');
+          return stored ? JSON.parse(stored) : { moneySaved: 2340, caloriesAvoided: 4890, ordersCompleted: 3 };
+        } catch {
+          return { moneySaved: 2340, caloriesAvoided: 4890, ordersCompleted: 3 };
+        }
+      });
+
+      useEffect(() => {
+        try {
+          localStorage.setItem('cravingly_lifetime_metrics', JSON.stringify(metrics));
+        } catch {}
+      }, [metrics]);
+
+      // Category and navigation
+      const [activeCategory, setActiveCategory] = useState('All');
+      const [customizingItem, setCustomizingItem] = useState(null);
+      
+      // Cart & Checkout State
+      const [cart, setCart] = useState([]);
+      const [isCartOpen, setIsCartOpen] = useState(false);
+      const [deliveryNote, setDeliveryNote] = useState("Leave outside, ring the bell and do a happy dance");
+      const [toastMsg, setToastMsg] = useState(null);
+
+      // Tracking & Climax
+      const [isTracking, setIsTracking] = useState(false);
+      const [trackingProgress, setTrackingProgress] = useState(0);
+      const [speedMultiplier, setSpeedMultiplier] = useState(1);
+      const [showCelebration, setShowCelebration] = useState(false);
+      const [lastOrderDetails, setLastOrderDetails] = useState(null);
+
+      const showToast = (msg) => {
+        setToastMsg(msg);
+        setTimeout(() => setToastMsg(null), 3600);
+      };
+
+      // Filtered Dishes
+      const filteredFood = activeCategory === 'All'
+        ? FOOD_MENU
+        : FOOD_MENU.filter(item => item.category === activeCategory);
+
+      // Bill calculations
+      const subtotal = cart.reduce((acc, item) => acc + (item.totalPrice * item.quantity), 0);
+      const deliveryFee = cart.length > 0 ? 45 : 0;
+      const platformFee = cart.length > 0 ? 10 : 0;
+      const taxes = cart.length > 0 ? Math.round(subtotal * 0.05) : 0;
+      const originalGrandTotal = subtotal + deliveryFee + platformFee + taxes;
+
+      // Add to cart from Customizer
+      const handleAddCustomizedItem = (dishData) => {
+        setCart(prev => {
+          const idx = prev.findIndex(item => item.id === dishData.id && JSON.stringify(item.customs) === JSON.stringify(dishData.customs));
+          if (idx > -1) {
+            const copy = [...prev];
+            copy[idx].quantity += 1;
+            return copy;
+          }
+          return [...prev, { ...dishData, quantity: 1 }];
+        });
+        setCustomizingItem(null);
+        showToast(`✨ Added "${dishData.name}" to your craving bag!`);
+      };
+
+      // Update item quantity in cart
+      const handleUpdateQty = (index, delta) => {
+        setCart(prev => {
+          const copy = [...prev];
+          copy[index].quantity += delta;
+          if (copy[index].quantity <= 0) {
+            return copy.filter((_, i) => i !== index);
+          }
+          return copy;
+        });
+      };
+
+      // Start live order tracking
+      const handlePlaceOrder = () => {
+        if (cart.length === 0) return;
+        setIsCartOpen(false);
+        setIsTracking(true);
+        setTrackingProgress(0);
+        setSpeedMultiplier(1);
+      };
+
+      // Progress animation loop for driver
+      useEffect(() => {
+        if (!isTracking) return;
+        const interval = setInterval(() => {
+          setTrackingProgress(prev => {
+            const next = prev + (1.2 * speedMultiplier);
+            if (next >= 100) {
+              clearInterval(interval);
+              triggerArrival();
+              return 100;
+            }
+            return next;
+          });
+        }, 150);
+        return () => clearInterval(interval);
+      }, [isTracking, speedMultiplier]);
+
+      // When scooter arrives
+      const triggerArrival = () => {
+        playWarmDoorbellChime();
+        if (window.confetti) {
+          window.confetti({
+            particleCount: 140,
+            spread: 80,
+            origin: { y: 0.6 },
+            colors: ['#FA5838', '#F5A623', '#3D7A5A', '#FF7D66', '#FFD166']
+          });
+        }
+
+        const totalCalories = cart.reduce((sum, item) => sum + (item.calories * item.quantity), 0);
+        const orderSummary = {
+          savedAmount: originalGrandTotal,
+          avoidedCalories: totalCalories || 850,
+          totalItems: cart.reduce((s, i) => s + i.quantity, 0)
+        };
+
+        setMetrics(prev => ({
+          moneySaved: prev.moneySaved + orderSummary.savedAmount,
+          caloriesAvoided: prev.caloriesAvoided + orderSummary.avoidedCalories,
+          ordersCompleted: prev.ordersCompleted + 1
+        }));
+
+        setLastOrderDetails(orderSummary);
+        setShowCelebration(true);
+        setIsTracking(false);
+      };
+
+      // Reset for next craving
+      const handleResetOrder = () => {
+        setShowCelebration(false);
+        setCart([]);
+        setTrackingProgress(0);
+      };
+
+      return (
+        <div className="w-full max-w-md bg-white border border-[#EBE3D5] rounded-none sm:rounded-3xl shadow-pillowy-lg overflow-hidden flex flex-col min-h-screen sm:min-h-[890px] relative">
+          
+          {/* Top Brand & Lifetime Status Bar */}
+          <header className="bg-cream-50/90 backdrop-blur-md border-b border-[#EBE3D5] p-3.5 px-4 sticky top-0 z-30 flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-9 h-9 rounded-2xl bg-coral-500/10 border border-coral-500/20 flex items-center justify-center text-coral-600 text-lg shadow-sm">
+                🛵
+              </div>
+              <div>
+                <h1 className="text-base font-extrabold text-[#231A12] tracking-tight flex items-center gap-1.5 font-serif">
+                  Cravingly <span className="text-[10px] font-sans font-bold bg-sage-100 text-sage-600 px-2 py-0.5 rounded-full">Guilt-Free</span>
+                </h1>
+                <p className="text-[10px] text-[#7A6E63] font-medium">100% Dopamine • 0 Calories • ₹0 Spent</p>
+              </div>
+            </div>
+
+            {/* Lifetime Savings Counter */}
+            <div className="flex items-center gap-1.5">
+              <div className="bg-white border border-[#E8DFC8] px-2.5 py-1 rounded-xl text-right shadow-sm">
+                <p className="text-[8px] uppercase tracking-wider text-sage-600 font-extrabold">Saved</p>
+                <p className="text-xs font-black text-emerald-600">₹{metrics.moneySaved}</p>
+              </div>
+              <div className="bg-white border border-[#E8DFC8] px-2.5 py-1 rounded-xl text-right shadow-sm">
+                <p className="text-[8px] uppercase tracking-wider text-honey-600 font-extrabold">Avoided</p>
+                <p className="text-xs font-black text-honey-600">{metrics.caloriesAvoided} kcal</p>
+              </div>
+            </div>
+          </header>
+
+          {/* Toast Notification */}
+          {toastMsg && (
+            <div className="absolute top-16 left-4 right-4 z-50 bg-[#2D251E] text-white text-xs px-4 py-3 rounded-2xl shadow-xl border border-white/10 flex items-center justify-between animate-float">
+              <span className="font-medium">{toastMsg}</span>
+              <button onClick={() => setToastMsg(null)} className="ml-2 text-stone-400 hover:text-white font-bold">✕</button>
+            </div>
+          )}
+
+          {/* Cheerful Tagline Banner */}
+          <div className="bg-gradient-to-r from-coral-500 to-honey-500 px-4 py-2.5 text-white text-xs font-semibold flex items-center justify-between shadow-inner">
+            <span className="flex items-center gap-1.5">
+              <span>✨</span>
+              <span>Satisfy your midnight food craving with pure serotonin</span>
+            </span>
+            <span className="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">Happy Hour</span>
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="p-3 bg-cream-100/60 border-b border-[#EBE3D5] flex gap-2 overflow-x-auto no-scrollbar">
+            {['All', 'Real Indian', 'Fast Food', 'Cozy Dinner'].map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                  activeCategory === cat
+                    ? 'bg-coral-500 text-white shadow-md shadow-coral-500/25 scale-[1.02]'
+                    : 'bg-white text-[#635548] border border-[#E5DCBE] hover:bg-cream-50'
+                }`}
+              >
+                {cat === 'All' ? '🍽️ All Delights' : cat === 'Real Indian' ? '🍛 Real Indian' : cat === 'Fast Food' ? '🍔 Street & Sizzle' : '🍝 Cozy Dinner'}
+              </button>
+            ))}
+          </div>
+
+          {/* Food Menu Feed */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-28">
+            {filteredFood.map(dish => (
+              <div 
+                key={dish.id}
+                className="bg-white border border-[#EDE4D5] rounded-3xl overflow-hidden shadow-pillowy hover:shadow-pillowy-lg transition-all duration-200 group flex flex-col"
+              >
+                {/* Photo & Badges */}
+                <div className="relative h-48 w-full overflow-hidden bg-stone-100">
+                  <img 
+                    src={dish.image} 
+                    alt={dish.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute top-3 left-3 flex gap-1.5">
+                    <span className="bg-white/90 backdrop-blur-md text-[#231A12] text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
+                      <span className="text-honey-500">★</span> {dish.rating} ({dish.reviews})
+                    </span>
+                    <span className="bg-coral-500/90 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm">
+                      {dish.badge}
+                    </span>
+                  </div>
+                  <div className="absolute bottom-3 left-3 bg-[#231A12]/80 backdrop-blur-md text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-md flex items-center gap-1.5">
+                    <span>⏱ {dish.prepTime}</span>
+                    <span>•</span>
+                    <span className="text-honey-400">🔥 {dish.calories} kcal</span>
+                  </div>
+                </div>
+
+                {/* Dish Info */}
+                <div className="p-4 flex flex-col justify-between flex-1">
+                  <div>
+                    <p className="text-[11px] font-bold text-coral-600 uppercase tracking-wider">{dish.restaurant}</p>
+                    <h3 className="font-extrabold text-[#231A12] text-base leading-snug mt-0.5">{dish.name}</h3>
+                    <p className="text-xs text-[#6B5E51] mt-1.5 line-clamp-2 leading-relaxed">{dish.description}</p>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#F2ECE1]">
+                    <div>
+                      <span className="text-lg font-black text-[#231A12]">₹{dish.price}</span>
+                      <span className="text-[10px] text-sage-600 font-bold ml-1.5 bg-sage-50 px-2 py-0.5 rounded-full border border-sage-100">
+                        100% Free at Checkout
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => setCustomizingItem(dish)}
+                      className="bg-coral-500 hover:bg-coral-600 active:scale-95 text-white font-extrabold text-xs px-4 py-2 rounded-2xl shadow-warm-glow transition-all flex items-center gap-1.5"
+                    >
+                      <span>Customize</span>
+                      <span className="text-sm font-black">+</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Sticky Bottom Floating Bag Summary */}
+          {cart.length > 0 && !isTracking && (
+            <div className="absolute bottom-0 left-0 right-0 p-3.5 bg-white/95 backdrop-blur-md border-t border-[#EDE4D5] shadow-pillowy-lg z-20 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] text-[#7A6E63] font-extrabold uppercase tracking-wider">Your Craving Feast</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-black text-[#231A12]">{cart.reduce((s, i) => s + i.quantity, 0)} Items</span>
+                  <span className="text-xs text-coral-600 font-bold">• Subtotal ₹{subtotal}</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="bg-coral-500 hover:bg-coral-600 text-white font-black text-xs px-5 py-2.5 rounded-2xl shadow-warm-glow active:scale-95 transition-all flex items-center gap-2"
+              >
+                <span>Review Cart</span>
+                <span className="text-sm">➔</span>
+              </button>
+            </div>
+          )}
+
+          {/* --- Interactive Customization Modal --- */}
+          {customizingItem && (
+            <CustomizerModal
+              item={customizingItem}
+              onClose={() => setCustomizingItem(null)}
+              onAdd={handleAddCustomizedItem}
+            />
+          )}
+
+          {/* --- Cart Drawer & Checkout Flow --- */}
+          {isCartOpen && (
+            <CartDrawer
+              cart={cart}
+              onUpdateQty={handleUpdateQty}
+              subtotal={subtotal}
+              deliveryFee={deliveryFee}
+              platformFee={platformFee}
+              taxes={taxes}
+              originalGrandTotal={originalGrandTotal}
+              deliveryNote={deliveryNote}
+              setDeliveryNote={setDeliveryNote}
+              onClose={() => setIsCartOpen(false)}
+              onPlaceOrder={handlePlaceOrder}
+            />
+          )}
+
+          {/* --- Interactive Leaflet Map Tracking Screen --- */}
+          {isTracking && (
+            <MapTracker
+              progress={trackingProgress}
+              speed={speedMultiplier}
+              setSpeed={setSpeedMultiplier}
+              showToast={showToast}
+            />
+          )}
+
+          {/* --- Joyful Climax Modal --- */}
+          {showCelebration && (
+            <CelebrationModal
+              data={lastOrderDetails}
+              onReset={handleResetOrder}
+              showToast={showToast}
+            />
+          )}
+
+        </div>
+      );
+    }
+
+    // --- Interactive Customizer Modal Component ---
+    function CustomizerModal({ item, onClose, onAdd }) {
+      const [portion, setPortion] = useState('Feast (Standard)');
+      const [spice, setSpice] = useState('Indian Desi Spicy');
+      const [addons, setAddons] = useState({
+        garlicNaan: false,
+        extraDip: false,
+        cheeseLayer: false
+      });
+      const [picklesState, setPicklesState] = useState('normal'); // 'normal', 'remove', 'add_back'
+      const [instructions, setInstructions] = useState('');
+
+      const portionPricing = {
+        'Regular': 0,
+        'Feast (Standard)': 0,
+        'Jumbo Feast': 60
+      };
+
+      const addonPricing = {
+        garlicNaan: 40,
+        extraDip: 25,
+        cheeseLayer: 50
+      };
+
+      const calculatedTotal = item.price + portionPricing[portion] +
+        (addons.garlicNaan ? addonPricing.garlicNaan : 0) +
+        (addons.extraDip ? addonPricing.extraDip : 0) +
+        (addons.cheeseLayer ? addonPricing.cheeseLayer : 0);
+
+      const handleConfirm = () => {
+        onAdd({
+          ...item,
+          totalPrice: calculatedTotal,
+          customs: {
+            portion,
+            spice,
+            addons: Object.keys(addons).filter(k => addons[k]),
+            pickles: picklesState,
+            instructions
+          }
+        });
+      };
+
+      return (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white border border-[#E8DFC8] w-full max-w-md rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl animate-float">
+            
+            {/* Header */}
+            <div className="p-4 border-b border-[#F2ECE1] bg-cream-50 flex items-center justify-between">
+              <div>
+                <h3 className="font-extrabold text-[#231A12] text-base">{item.name}</h3>
+                <p className="text-xs text-coral-600 font-bold">Customize Your Craving Recipe</p>
+              </div>
+              <button 
+                onClick={onClose} 
+                className="w-8 h-8 rounded-full bg-cream-200/80 hover:bg-cream-300 text-[#4A3E31] flex items-center justify-center font-bold text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Scrollable Customization Body */}
+            <div className="p-4 overflow-y-auto space-y-4 text-xs">
+              
+              {/* Portion Selector */}
+              <div>
+                <label className="font-extrabold text-[#231A12] block mb-2">🍽️ Choose Your Portion Size:</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: 'Regular', price: '+₹0' },
+                    { label: 'Feast (Standard)', price: '+₹0' },
+                    { label: 'Jumbo Feast', price: '+₹60' }
+                  ].map(p => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() => setPortion(p.label)}
+                      className={`p-2.5 rounded-2xl border text-center transition-all ${
+                        portion === p.label
+                          ? 'border-coral-500 bg-coral-50 text-coral-700 font-extrabold shadow-sm'
+                          : 'border-[#EAE1CF] bg-cream-50/50 text-[#5C4F41]'
+                      }`}
+                    >
+                      <p className="text-[11px] font-bold">{p.label}</p>
+                      <span className="text-[10px] text-coral-600 font-semibold">{p.price}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Spice Meter */}
+              <div>
+                <label className="font-extrabold text-[#231A12] block mb-2">🌶️ Spice Meter Calibration:</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'Mild', icon: '🌿', desc: 'Gentle & aromatic' },
+                    { key: 'Medium', icon: '🌶️', desc: 'Pleasant warmth' },
+                    { key: 'Indian Desi Spicy', icon: '🔥', desc: 'Full authentic kick' },
+                    { key: 'Firecracker', icon: '💥', desc: 'Heart-racing heat' }
+                  ].map(lvl => (
+                    <button
+                      key={lvl.key}
+                      type="button"
+                      onClick={() => setSpice(lvl.key)}
+                      className={`p-2 rounded-2xl border text-left flex items-center gap-2 transition-all ${
+                        spice === lvl.key
+                          ? 'border-coral-500 bg-coral-50 text-coral-800 font-bold shadow-sm'
+                          : 'border-[#EAE1CF] bg-cream-50/40 text-[#5C4F41]'
+                      }`}
+                    >
+                      <span className="text-base">{lvl.icon}</span>
+                      <div>
+                        <p className="font-bold text-[11px]">{lvl.key}</p>
+                        <p className="text-[9px] text-[#85776A]">{lvl.desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Add-ons */}
+              <div>
+                <label className="font-extrabold text-[#231A12] block mb-2">✨ Yummy Add-Ons:</label>
+                <div className="space-y-2">
+                  {[
+                    { key: 'garlicNaan', label: 'Extra Blistered Garlic Butter Naan', price: 40 },
+                    { key: 'extraDip', label: 'Truffle Mayo / Fresh Mint Chutney Dip', price: 25 },
+                    { key: 'cheeseLayer', label: 'Glorious Melted Cheese Crown', price: 50 }
+                  ].map(addon => (
+                    <label 
+                      key={addon.key} 
+                      className="flex items-center justify-between p-2.5 rounded-2xl border border-[#EAE1CF] bg-white hover:bg-cream-50 cursor-pointer shadow-sm"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <input
+                          type="checkbox"
+                          checked={addons[addon.key]}
+                          onChange={e => setAddons({ ...addons, [addon.key]: e.target.checked })}
+                          className="w-4 h-4 rounded text-coral-500 accent-coral-500 focus:ring-0 cursor-pointer"
+                        />
+                        <span className="text-[#382F26] font-semibold">{addon.label}</span>
+                      </div>
+                      <span className="text-coral-600 font-extrabold">+₹{addon.price}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Playful Behavioral Pickle Switch */}
+              <div>
+                <label className="font-extrabold text-[#231A12] block mb-2">🥒 The Pickle Dilemma:</label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    { id: 'normal', text: 'Classic Pickles' },
+                    { id: 'remove', text: 'No Pickles Please' },
+                    { id: 'add_back', text: 'Add them back, I changed my mind' }
+                  ].map(opt => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setPicklesState(opt.id)}
+                      className={`p-2 rounded-2xl border text-center transition-all ${
+                        picklesState === opt.id
+                          ? 'border-honey-500 bg-amber-50 text-honey-600 font-extrabold shadow-sm'
+                          : 'border-[#EAE1CF] bg-cream-50/40 text-[#6B5E51]'
+                      }`}
+                    >
+                      <span className="text-[10px] leading-tight block">{opt.text}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Special Instructions */}
+              <div>
+                <label className="font-extrabold text-[#231A12] block mb-1.5">👨‍🍳 Special Instructions for Chef:</label>
+                <textarea
+                  value={instructions}
+                  onChange={e => setInstructions(e.target.value)}
+                  placeholder="Tell the chef your heart's desire (e.g., 'Crispy edges on the naan, extra love in the gravy...')"
+                  className="w-full bg-cream-50/60 border border-[#EAE1CF] rounded-2xl p-2.5 text-[#382F26] placeholder-[#9E9081] focus:outline-none focus:border-coral-500 text-xs"
+                  rows="2"
+                ></textarea>
+              </div>
+
+            </div>
+
+            {/* Bottom Add Bar */}
+            <div className="p-4 border-t border-[#F2ECE1] bg-cream-50 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] text-[#7A6E63] font-bold">Total with options:</p>
+                <p className="text-lg font-black text-coral-600">₹{calculatedTotal}</p>
+              </div>
+
+              <button
+                onClick={handleConfirm}
+                className="bg-coral-500 hover:bg-coral-600 text-white font-black px-6 py-2.5 rounded-2xl text-xs shadow-warm-glow active:scale-95 transition-all"
+              >
+                Add to Craving Bag 🛍️
+              </button>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    // --- Cart Drawer Component ---
+    function CartDrawer({ cart, onUpdateQty, subtotal, deliveryFee, platformFee, taxes, originalGrandTotal, deliveryNote, setDeliveryNote, onClose, onPlaceOrder }) {
+      return (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex justify-end">
+          <div className="bg-white border-l border-[#EDE4D5] w-full max-w-md h-full flex flex-col justify-between overflow-hidden shadow-2xl animate-float">
+            
+            {/* Header */}
+            <div className="p-4 border-b border-[#F2ECE1] bg-cream-50 flex items-center justify-between">
+              <div>
+                <h3 className="font-extrabold text-[#231A12] text-base font-serif">Your Craving Bag</h3>
+                <p className="text-xs text-coral-600 font-bold">{cart.length} mouthwatering recipes selected</p>
+              </div>
+              <button 
+                onClick={onClose} 
+                className="w-8 h-8 rounded-full bg-cream-200 hover:bg-cream-300 text-[#4A3E31] flex items-center justify-center font-bold text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Items & Breakdown Scroll */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+              
+              {/* Item List */}
+              <div className="space-y-3">
+                {cart.map((dish, idx) => (
+                  <div key={idx} className="bg-cream-50/60 border border-[#EDE4D5] p-3 rounded-2xl flex items-center justify-between shadow-sm">
+                    <div className="space-y-0.5 pr-2">
+                      <h4 className="font-extrabold text-[#231A12] text-xs">{dish.name}</h4>
+                      <p className="text-[10px] text-coral-600 font-bold">
+                        🌶️ {dish.customs?.spice} • {dish.customs?.portion}
+                      </p>
+                      {dish.customs?.addons?.length > 0 && (
+                        <p className="text-[10px] text-[#7A6E63]">+{dish.customs.addons.join(', ')}</p>
+                      )}
+                      <p className="font-black text-[#231A12] text-xs pt-1">₹{dish.totalPrice * dish.quantity}</p>
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-white border border-[#E5DCBE] px-2 py-1 rounded-xl shadow-inner">
+                      <button onClick={() => onUpdateQty(idx, -1)} className="text-coral-600 font-extrabold px-1 text-sm">-</button>
+                      <span className="font-black text-[#231A12] text-xs">{dish.quantity}</span>
+                      <button onClick={() => onUpdateQty(idx, 1)} className="text-coral-600 font-extrabold px-1 text-sm">+</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Playful Delivery Instructions */}
+              <div className="bg-cream-50 p-3 rounded-2xl border border-[#EDE4D5] space-y-2">
+                <p className="font-extrabold text-[#231A12] text-xs">🚪 Delivery Instructions for Courier:</p>
+                <div className="space-y-1.5">
+                  {[
+                    "Leave outside, ring the bell and do a happy dance",
+                    "Don't knock, the dogs will bark and wake the baby",
+                    "Hand directly with a warm smile",
+                    "Leave at door and text 'Feast is served'"
+                  ].map(note => (
+                    <button
+                      key={note}
+                      onClick={() => setDeliveryNote(note)}
+                      className={`w-full text-left p-2 rounded-xl border text-[11px] font-semibold transition-all ${
+                        deliveryNote === note
+                          ? 'border-coral-500 bg-coral-50 text-coral-800 font-extrabold'
+                          : 'border-[#EDE4D5] bg-white text-[#6B5E51] hover:bg-cream-100'
+                      }`}
+                    >
+                      • {note}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 100% Happy Hour Voucher Card */}
+              <div className="p-3.5 rounded-2xl bg-sage-50 border-2 border-dashed border-sage-500 text-center space-y-1 shadow-sm">
+                <span className="text-[10px] font-black tracking-wider text-sage-600 uppercase bg-sage-100 px-2 py-0.5 rounded-full">
+                  Happy Hour Voucher Auto-Applied
+                </span>
+                <p className="font-black text-sm text-sage-700">CRAVINGLY-HAPPY-HOUR (-100%)</p>
+                <p className="text-[10px] text-sage-600 font-medium">100% Craving Subsidy • Zero Real Money • Zero Real Calories</p>
+              </div>
+
+              {/* Transparent Bill Breakdown */}
+              <div className="border-t border-[#F2ECE1] pt-3 space-y-1.5 text-[#6B5E51]">
+                <div className="flex justify-between">
+                  <span>Food Item Total</span>
+                  <span className="font-bold text-[#231A12]">₹{subtotal}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Standard Delivery Fee</span>
+                  <span className="font-bold text-[#231A12]">₹{deliveryFee}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Platform Fee</span>
+                  <span className="font-bold text-[#231A12]">₹{platformFee}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Taxes (GST 5%)</span>
+                  <span className="font-bold text-[#231A12]">₹{taxes}</span>
+                </div>
+
+                <div className="flex justify-between text-[#231A12] font-extrabold pt-1.5 border-t border-[#F2ECE1]">
+                  <span>Original Bill Value</span>
+                  <span className="line-through text-[#9E9081]">₹{originalGrandTotal}</span>
+                </div>
+
+                <div className="flex justify-between text-sage-600 font-black text-base pt-1">
+                  <span>Net Amount Payable:</span>
+                  <span className="text-emerald-600">₹0.00 (Free)</span>
+                </div>
+              </div>
+
+            </div>
+
+            {/* CTA Order Button */}
+            <div className="p-4 border-t border-[#F2ECE1] bg-white">
+              <button
+                onClick={onPlaceOrder}
+                className="w-full bg-gradient-to-r from-coral-500 to-coral-600 hover:from-coral-600 hover:to-coral-700 text-white font-black py-3.5 rounded-2xl text-sm shadow-warm-glow active:scale-95 transition-all flex items-center justify-center gap-2 animate-pulse-soft"
+              >
+                <span>🛵 Place Craving Order (₹0.00 Free)</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    // --- Interactive Leaflet.js Map Tracker Component ---
+    function MapTracker({ progress, speed, setSpeed, showToast }) {
+      const mapContainerRef = useRef(null);
+      const leafletMapRef = useRef(null);
+      const riderMarkerRef = useRef(null);
+
+      useEffect(() => {
+        if (!mapContainerRef.current) return;
+
+        // Initialize Leaflet map with smooth warm tiles
+        const map = L.map(mapContainerRef.current, {
+          zoomControl: false,
+          attributionControl: false
+        }).setView([12.956, 77.633], 13);
+
+        leafletMapRef.current = map;
+
+        // Carto Voyager warm clean map tiles
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19
+        }).addTo(map);
+
+        // Restaurant Pin
+        const restIcon = L.divIcon({
+          html: '<div style="background:#FA5838;padding:8px;border-radius:50%;border:3px solid white;box-shadow:0 6px 14px rgba(250,88,56,0.4);font-size:16px;text-align:center;">🍳</div>',
+          className: 'custom-pin',
+          iconSize: [36, 36]
+        });
+        L.marker(BENGALURU_ROUTE[0], { icon: restIcon }).addTo(map).bindPopup("Chef's Kitchen (Koramangala)");
+
+        // Destination Home Pin
+        const destIcon = L.divIcon({
+          html: '<div style="background:#3D7A5A;padding:8px;border-radius:50%;border:3px solid white;box-shadow:0 6px 14px rgba(61,122,90,0.4);font-size:16px;text-align:center;">🏠</div>',
+          className: 'custom-pin',
+          iconSize: [36, 36]
+        });
+        L.marker(BENGALURU_ROUTE[BENGALURU_ROUTE.length - 1], { icon: destIcon }).addTo(map).bindPopup("Your Cozy Home (Indiranagar)");
+
+        // Route Polyline
+        L.polyline(BENGALURU_ROUTE, {
+          color: '#FA5838',
+          weight: 5,
+          opacity: 0.85,
+          dashArray: '8, 8'
+        }).addTo(map);
+
+        // Electric Scooter Marker
+        const scooterIcon = L.divIcon({
+          html: '<div style="background:#231A12;color:white;padding:7px;border-radius:50%;border:3px solid #FFC542;box-shadow:0 6px 16px rgba(0,0,0,0.3);font-size:16px;text-align:center;">🛵</div>',
+          className: 'custom-scooter',
+          iconSize: [38, 38]
+        });
+        riderMarkerRef.current = L.marker(BENGALURU_ROUTE[0], { icon: scooterIcon }).addTo(map);
+
+        return () => {
+          map.remove();
+        };
+      }, []);
+
+      // Interpolate rider location
+      useEffect(() => {
+        if (!riderMarkerRef.current || !leafletMapRef.current) return;
+
+        const totalSegments = BENGALURU_ROUTE.length - 1;
+        const normalized = (progress / 100) * totalSegments;
+        const index = Math.min(Math.floor(normalized), totalSegments - 1);
+        const segmentProgress = normalized - index;
+
+        const start = BENGALURU_ROUTE[index];
+        const end = BENGALURU_ROUTE[index + 1] || start;
+
+        const currentLat = start[0] + (end[0] - start[0]) * segmentProgress;
+        const currentLng = start[1] + (end[1] - start[1]) * segmentProgress;
+
+        riderMarkerRef.current.setLatLng([currentLat, currentLng]);
+      }, [progress]);
+
+      // Dynamic milestone copy
+      let stageText = "Chef is putting love into the packaging...";
+      if (progress >= 25 && progress < 50) {
+        stageText = "Driver Ramesh just picked up your feast!";
+      } else if (progress >= 50 && progress < 80) {
+        stageText = "Electric scooter is zipping through 100ft road traffic...";
+      } else if (progress >= 80) {
+        stageText = "Turning onto your street! Prepare your appetite...";
+      }
+
+      return (
+        <div className="absolute inset-0 z-40 bg-white flex flex-col">
+          
+          {/* Header */}
+          <div className="p-3.5 bg-white/95 backdrop-blur border-b border-[#EDE4D5] z-10 flex items-center justify-between shadow-sm">
+            <div>
+              <p className="text-[10px] text-coral-600 font-extrabold uppercase tracking-wider">LIVE COURIER TRACKING</p>
+              <h2 className="text-sm font-black text-[#231A12]">Ramesh on Ather 450X</h2>
+            </div>
+
+            {/* Fast Forward Speed Button */}
+            <button
+              onClick={() => setSpeed(s => s === 1 ? 2 : s === 2 ? 5 : 1)}
+              className="bg-honey-50 border border-honey-500/40 text-honey-600 font-black px-3 py-1.5 rounded-xl text-xs hover:bg-honey-100 transition-all flex items-center gap-1 shadow-sm"
+            >
+              <span>⚡ Fast-Forward</span>
+              <span>{speed}x</span>
+            </button>
+          </div>
+
+          {/* Real Leaflet Map */}
+          <div className="flex-1 w-full relative">
+            <div ref={mapContainerRef} className="w-full h-full"></div>
+
+            {/* Floating Live Progress Status Card */}
+            <div className="absolute top-4 left-4 right-4 z-[500] bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-[#EDE4D5] shadow-pillowy-lg">
+              <div className="flex justify-between items-center text-xs mb-1.5">
+                <span className="font-extrabold text-[#231A12]">Delivery Progress</span>
+                <span className="font-black text-coral-600">{Math.round(progress)}%</span>
+              </div>
+              <div className="w-full bg-cream-200 h-2.5 rounded-full overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-honey-500 via-coral-500 to-coral-600 h-full transition-all duration-150 rounded-full"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-[#4A3E31] font-bold mt-2 flex items-center gap-1.5">
+                <span>📍</span>
+                <span>{stageText}</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom Driver Profile Card */}
+          <div className="p-4 bg-white border-t border-[#EDE4D5] flex items-center justify-between shadow-pillowy">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 rounded-2xl bg-cream-100 border border-[#EDE4D5] flex items-center justify-center text-2xl shadow-sm">
+                👨‍✈️
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h4 className="font-black text-[#231A12] text-xs">Ramesh Kumar</h4>
+                  <span className="text-[10px] bg-honey-100 text-honey-600 px-1.5 py-0.5 rounded font-black">★ 4.9</span>
+                </div>
+                <p className="text-[11px] text-[#7A6E63] font-medium">Electric Scooter • KA-03-HA-4412</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => showToast("📞 Ramesh: 'I am right at your doorstep! Enjoy this 100% guilt-free feast!'")}
+              className="bg-cream-100 hover:bg-cream-200 text-[#382F26] px-3.5 py-2 rounded-xl text-xs font-bold border border-[#E2DACB] flex items-center gap-1.5 transition-all shadow-sm"
+            >
+              <span>📞</span>
+              <span>Call Rider</span>
+            </button>
+          </div>
+
+        </div>
+      );
+    }
+
+    // --- Joyful Arrival & Dopamine Summary Modal ---
+    function CelebrationModal({ data, onReset, showToast }) {
+      const handleShareReceipt = () => {
+        const text = `✨ Cravingly Dopamine Receipt:
+🎉 Craving Satisfied: 100%
+💰 Money Saved: ₹${data?.savedAmount || 0}
+🥗 Calories Dodged: ${data?.avoidedCalories || 0} kcal
+Guilt: 0% | Serotonin: Overload
+Enjoyed with Cravingly!`;
+        navigator.clipboard.writeText(text);
+        showToast("📋 Cravingly receipt copied to clipboard!");
+      };
+
+      return (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white border border-[#E8DFC8] w-full max-w-sm rounded-3xl p-6 text-center space-y-4 shadow-2xl animate-float">
+            
+            <div className="w-20 h-20 mx-auto rounded-3xl bg-sage-50 border-2 border-sage-500/30 flex items-center justify-center text-4xl shadow-inner animate-pulse-soft">
+              ✨🍽️
+            </div>
+
+            <div className="space-y-1.5">
+              <h2 className="text-xl font-black text-[#231A12] font-serif">Your Craving Has Been Satisfied!</h2>
+              <p className="text-xs text-[#6B5E51] leading-relaxed">
+                You experienced the full, delicious psychological joy of choosing toppings, ordering, and tracking your rider with <strong className="text-sage-600">zero money spent</strong> and <strong className="text-coral-600">zero calories gained</strong>.
+              </p>
+            </div>
+
+            {/* Scorecard */}
+            <div className="grid grid-cols-2 gap-2.5 py-1">
+              <div className="bg-sage-50 border border-sage-200 p-3 rounded-2xl text-center">
+                <span className="text-[10px] text-sage-600 font-extrabold uppercase">Money Saved</span>
+                <p className="text-xl font-black text-emerald-600">₹{data?.savedAmount || 0}</p>
+                <p className="text-[9px] text-sage-500 font-bold">100% Happy Hour</p>
+              </div>
+
+              <div className="bg-honey-50 border border-honey-200 p-3 rounded-2xl text-center">
+                <span className="text-[10px] text-honey-600 font-extrabold uppercase">Calories Dodged</span>
+                <p className="text-xl font-black text-honey-600">{data?.avoidedCalories || 0}</p>
+                <p className="text-[9px] text-honey-600 font-bold">Guilt-Free Bliss</p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-2 pt-2">
+              <button
+                onClick={onReset}
+                className="w-full bg-coral-500 hover:bg-coral-600 text-white font-black py-3 rounded-2xl text-xs shadow-warm-glow active:scale-95 transition-all"
+              >
+                Satisfy Another Craving 🍕
+              </button>
+
+              <button
+                onClick={handleShareReceipt}
+                className="w-full bg-cream-100 hover:bg-cream-200 text-[#4A3E31] font-bold py-2.5 rounded-2xl text-xs border border-[#E2DACB] active:scale-95 transition-all"
+              >
+                📋 Share Dopamine Receipt
+              </button>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<CravinglyApp />);
+  </script>
+</body>
+</html>
