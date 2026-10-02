@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cravingly — Guilt-Free Dopamine Food Delivery</title>
   
-  <!-- Google Fonts: Plus Jakarta Sans -->
+  <!-- Google Fonts: Plus Jakarta Sans & Playfair Display -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CSS -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -67,9 +67,6 @@
   <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <!-- Lucide Icons standalone UMD -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
   <style>
     body {
       background-color: #FBF8F2;
@@ -80,17 +77,16 @@
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-thumb { background: #E2DACB; border-radius: 9999px; }
     
-    @keyframes floatGentle {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-4px); }
+    @keyframes pulseAura {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(250, 88, 56, 0.6); }
+      70% { box-shadow: 0 0 0 14px rgba(250, 88, 56, 0); }
     }
-    .animate-float { animation: floatGentle 3s ease-in-out infinite; }
+    .pulse-beacon { animation: pulseAura 2s infinite; }
 
-    @keyframes pulseSoft {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.02); opacity: 0.95; }
+    @keyframes radarSweep {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-    .animate-pulse-soft { animation: pulseSoft 2.5s infinite ease-in-out; }
 
     .leaflet-container {
       width: 100%;
@@ -117,7 +113,7 @@
         if (!AudioCtx) return;
         const ctx = new AudioCtx();
 
-        // 1st note: E5 (659.25Hz) - bright cheerful greeting
+        // 1st note: E5 (659.25Hz)
         const osc1 = ctx.createOscillator();
         const gain1 = ctx.createGain();
         osc1.type = 'triangle';
@@ -129,7 +125,7 @@
         osc1.start(ctx.currentTime);
         osc1.stop(ctx.currentTime + 0.9);
 
-        // 2nd note: C5 (523.25Hz) - deep warm resolution
+        // 2nd note: C5 (523.25Hz)
         const osc2 = ctx.createOscillator();
         const gain2 = ctx.createGain();
         osc2.type = 'triangle';
@@ -145,9 +141,39 @@
       }
     }
 
-    // --- Authentic Food Catalog ---
+    // --- Realistic 25-Point Urban Bengaluru Navigation Route ---
+    // Koramangala 4th Block -> Sony World -> Intermediate Ring Road -> Domlur -> 100ft Road -> Indiranagar
+    const HIGH_RES_ROUTE = [
+      { lat: 12.9344, lng: 77.6253, street: "Koramangala 4th Block - Spice Kitchen Hub" },
+      { lat: 12.9354, lng: 77.6258, street: "80 Feet Main Road" },
+      { lat: 12.9368, lng: 77.6265, street: "Koramangala BDA Complex" },
+      { lat: 12.9382, lng: 77.6272, street: "Sony World Signal Junction" },
+      { lat: 12.9398, lng: 77.6276, street: "Koramangala 1st Block Boulevard" },
+      { lat: 12.9415, lng: 77.6280, street: "Koramangala Ring Road Connector" },
+      { lat: 12.9435, lng: 77.6284, street: "Entering Intermediate Ring Road (IRR)" },
+      { lat: 12.9460, lng: 77.6291, street: "IRR - Passing Embassy GolfLinks (EGL)" },
+      { lat: 12.9490, lng: 77.6304, street: "IRR - Cruising at 38 km/h" },
+      { lat: 12.9525, lng: 77.6318, street: "IRR - Approaching Dell Campus" },
+      { lat: 12.9555, lng: 77.6335, street: "Ascending Domlur Flyover Ramp" },
+      { lat: 12.9585, lng: 77.6350, street: "Domlur Flyover Bridge Top" },
+      { lat: 12.9610, lng: 77.6360, street: "Descending Domlur towards Indiranagar" },
+      { lat: 12.9630, lng: 77.6368, street: "Old Airport Road Junction" },
+      { lat: 12.9655, lng: 77.6378, street: "Entering 100 Feet Road, Indiranagar" },
+      { lat: 12.9680, lng: 77.6390, street: "100 Feet Road - 6th Main Signal" },
+      { lat: 12.9700, lng: 77.6398, street: "100 Feet Road - Glen's Bakehouse Corridor" },
+      { lat: 12.9715, lng: 77.6405, street: "100 Feet Road - 12th Main Crossing" },
+      { lat: 12.9735, lng: 77.6410, street: "100 Feet Road - Near Toit Brewery" },
+      { lat: 12.9750, lng: 77.6415, street: "100 Feet Road - Turning onto 10th Cross" },
+      { lat: 12.9765, lng: 77.6418, street: "Defence Colony Residential Avenue" },
+      { lat: 12.9775, lng: 77.6416, street: "Turning into Your Gate Street" },
+      { lat: 12.9782, lng: 77.6415, street: "Arrived at Your Gate! (Indiranagar)" }
+    ];
+
+    // Total realistic real-time trip duration: 120 seconds (2:00 mins)
+    const REAL_TIME_DURATION_SECONDS = 120;
+
+    // --- Food Catalog ---
     const FOOD_MENU = [
-      // Real Indian Cuisine
       {
         id: 'ind-biryani',
         category: 'Real Indian',
@@ -218,8 +244,6 @@
         image: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=800&auto=format&fit=crop&q=80',
         description: 'Golden fried khoya dumplings steeped in warm saffron and crushed cardamom rose syrup, garnished with toasted pistachio slivers.'
       },
-
-      // Street Food & Fast Food
       {
         id: 'ff-smashburger',
         category: 'Fast Food',
@@ -262,8 +286,6 @@
         image: 'https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=800&auto=format&fit=crop&q=80',
         description: 'San Marzano tomato base, hand-torn fresh fior di latte mozzarella, fragrant sweet basil, black truffle reduction, and a leopard-spotted 48hr sourdough crust.'
       },
-
-      // Cozy Dinner & Bowls
       {
         id: 'gm-fettuccine',
         category: 'Cozy Dinner',
@@ -294,20 +316,8 @@
       }
     ];
 
-    // Real Urban Route: Koramangala 4th Block to Indiranagar 100ft Road (Bengaluru)
-    const BENGALURU_ROUTE = [
-      [12.9344, 77.6253], // 0% Restaurant: Koramangala 4th Block
-      [12.9385, 77.6268],
-      [12.9460, 77.6288], // Intermediate Ring Road
-      [12.9555, 77.6335], // Domlur Flyover
-      [12.9642, 77.6372], // Indiranagar Entry
-      [12.9715, 77.6405], // 100ft Road Corridor
-      [12.9782, 77.6415]  // 100% Home Destination: Indiranagar
-    ];
-
-    // --- Main Application ---
+    // --- Main App Component ---
     function CravinglyApp() {
-      // Lifetime metrics stored in localStorage
       const [metrics, setMetrics] = useState(() => {
         try {
           const stored = localStorage.getItem('cravingly_lifetime_metrics');
@@ -323,41 +333,35 @@
         } catch {}
       }, [metrics]);
 
-      // Category and navigation
       const [activeCategory, setActiveCategory] = useState('All');
       const [customizingItem, setCustomizingItem] = useState(null);
-      
-      // Cart & Checkout State
       const [cart, setCart] = useState([]);
       const [isCartOpen, setIsCartOpen] = useState(false);
       const [deliveryNote, setDeliveryNote] = useState("Leave outside, ring the bell and do a happy dance");
       const [toastMsg, setToastMsg] = useState(null);
 
-      // Tracking & Climax
+      // Tracking and Climax States
       const [isTracking, setIsTracking] = useState(false);
-      const [trackingProgress, setTrackingProgress] = useState(0);
-      const [speedMultiplier, setSpeedMultiplier] = useState(1);
+      const [trackingProgress, setTrackingProgress] = useState(0); // 0 -> 100
+      const [speedMultiplier, setSpeedMultiplier] = useState(1);  // 1x, 2x, 5x, 10x
       const [showCelebration, setShowCelebration] = useState(false);
       const [lastOrderDetails, setLastOrderDetails] = useState(null);
 
       const showToast = (msg) => {
         setToastMsg(msg);
-        setTimeout(() => setToastMsg(null), 3600);
+        setTimeout(() => setToastMsg(null), 3800);
       };
 
-      // Filtered Dishes
       const filteredFood = activeCategory === 'All'
         ? FOOD_MENU
         : FOOD_MENU.filter(item => item.category === activeCategory);
 
-      // Bill calculations
       const subtotal = cart.reduce((acc, item) => acc + (item.totalPrice * item.quantity), 0);
       const deliveryFee = cart.length > 0 ? 45 : 0;
       const platformFee = cart.length > 0 ? 10 : 0;
       const taxes = cart.length > 0 ? Math.round(subtotal * 0.05) : 0;
       const originalGrandTotal = subtotal + deliveryFee + platformFee + taxes;
 
-      // Add to cart from Customizer
       const handleAddCustomizedItem = (dishData) => {
         setCart(prev => {
           const idx = prev.findIndex(item => item.id === dishData.id && JSON.stringify(item.customs) === JSON.stringify(dishData.customs));
@@ -372,7 +376,6 @@
         showToast(`✨ Added "${dishData.name}" to your craving bag!`);
       };
 
-      // Update item quantity in cart
       const handleUpdateQty = (index, delta) => {
         setCart(prev => {
           const copy = [...prev];
@@ -384,7 +387,6 @@
         });
       };
 
-      // Start live order tracking
       const handlePlaceOrder = () => {
         if (cart.length === 0) return;
         setIsCartOpen(false);
@@ -393,30 +395,37 @@
         setSpeedMultiplier(1);
       };
 
-      // Progress animation loop for driver
+      // 2-Minute (120-Second) Realistic Driver Progress Loop
       useEffect(() => {
         if (!isTracking) return;
-        const interval = setInterval(() => {
+
+        // Interval: every 100 milliseconds
+        // In 120s, there are 1,200 intervals of 100ms.
+        // Each interval increases progress by: (100 / 1200) * speedMultiplier = (1 / 12) * speedMultiplier
+        const intervalTimeMs = 100;
+        const progressIncrementPerInterval = (100 / (REAL_TIME_DURATION_SECONDS * 10)) * speedMultiplier;
+
+        const timer = setInterval(() => {
           setTrackingProgress(prev => {
-            const next = prev + (1.2 * speedMultiplier);
+            const next = prev + progressIncrementPerInterval;
             if (next >= 100) {
-              clearInterval(interval);
+              clearInterval(timer);
               triggerArrival();
               return 100;
             }
             return next;
           });
-        }, 150);
-        return () => clearInterval(interval);
+        }, intervalTimeMs);
+
+        return () => clearInterval(timer);
       }, [isTracking, speedMultiplier]);
 
-      // When scooter arrives
       const triggerArrival = () => {
         playWarmDoorbellChime();
         if (window.confetti) {
           window.confetti({
-            particleCount: 140,
-            spread: 80,
+            particleCount: 160,
+            spread: 90,
             origin: { y: 0.6 },
             colors: ['#FA5838', '#F5A623', '#3D7A5A', '#FF7D66', '#FFD166']
           });
@@ -440,7 +449,6 @@
         setIsTracking(false);
       };
 
-      // Reset for next craving
       const handleResetOrder = () => {
         setShowCelebration(false);
         setCart([]);
@@ -451,7 +459,7 @@
         <div className="w-full max-w-md bg-white border border-[#EBE3D5] rounded-none sm:rounded-3xl shadow-pillowy-lg overflow-hidden flex flex-col min-h-screen sm:min-h-[890px] relative">
           
           {/* Top Brand & Lifetime Status Bar */}
-          <header className="bg-cream-50/90 backdrop-blur-md border-b border-[#EBE3D5] p-3.5 px-4 sticky top-0 z-30 flex items-center justify-between">
+          <header className="bg-cream-50/95 backdrop-blur-md border-b border-[#EBE3D5] p-3.5 px-4 sticky top-0 z-30 flex items-center justify-between">
             <div className="flex items-center space-x-2.5">
               <div className="w-9 h-9 rounded-2xl bg-coral-500/10 border border-coral-500/20 flex items-center justify-center text-coral-600 text-lg shadow-sm">
                 🛵
@@ -464,7 +472,6 @@
               </div>
             </div>
 
-            {/* Lifetime Savings Counter */}
             <div className="flex items-center gap-1.5">
               <div className="bg-white border border-[#E8DFC8] px-2.5 py-1 rounded-xl text-right shadow-sm">
                 <p className="text-[8px] uppercase tracking-wider text-sage-600 font-extrabold">Saved</p>
@@ -479,20 +486,11 @@
 
           {/* Toast Notification */}
           {toastMsg && (
-            <div className="absolute top-16 left-4 right-4 z-50 bg-[#2D251E] text-white text-xs px-4 py-3 rounded-2xl shadow-xl border border-white/10 flex items-center justify-between animate-float">
+            <div className="absolute top-16 left-4 right-4 z-50 bg-[#2D251E] text-white text-xs px-4 py-3 rounded-2xl shadow-xl border border-white/10 flex items-center justify-between">
               <span className="font-medium">{toastMsg}</span>
               <button onClick={() => setToastMsg(null)} className="ml-2 text-stone-400 hover:text-white font-bold">✕</button>
             </div>
           )}
-
-          {/* Cheerful Tagline Banner */}
-          <div className="bg-gradient-to-r from-coral-500 to-honey-500 px-4 py-2.5 text-white text-xs font-semibold flex items-center justify-between shadow-inner">
-            <span className="flex items-center gap-1.5">
-              <span>✨</span>
-              <span>Satisfy your midnight food craving with pure serotonin</span>
-            </span>
-            <span className="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">Happy Hour</span>
-          </div>
 
           {/* Category Filter Pills */}
           <div className="p-3 bg-cream-100/60 border-b border-[#EBE3D5] flex gap-2 overflow-x-auto no-scrollbar">
@@ -518,7 +516,6 @@
                 key={dish.id}
                 className="bg-white border border-[#EDE4D5] rounded-3xl overflow-hidden shadow-pillowy hover:shadow-pillowy-lg transition-all duration-200 group flex flex-col"
               >
-                {/* Photo & Badges */}
                 <div className="relative h-48 w-full overflow-hidden bg-stone-100">
                   <img 
                     src={dish.image} 
@@ -540,7 +537,6 @@
                   </div>
                 </div>
 
-                {/* Dish Info */}
                 <div className="p-4 flex flex-col justify-between flex-1">
                   <div>
                     <p className="text-[11px] font-bold text-coral-600 uppercase tracking-wider">{dish.restaurant}</p>
@@ -590,7 +586,7 @@
             </div>
           )}
 
-          {/* --- Interactive Customization Modal --- */}
+          {/* Interactive Customizer Modal */}
           {customizingItem && (
             <CustomizerModal
               item={customizingItem}
@@ -599,7 +595,7 @@
             />
           )}
 
-          {/* --- Cart Drawer & Checkout Flow --- */}
+          {/* Cart Drawer */}
           {isCartOpen && (
             <CartDrawer
               cart={cart}
@@ -616,9 +612,9 @@
             />
           )}
 
-          {/* --- Interactive Leaflet Map Tracking Screen --- */}
+          {/* Enhanced 2-Minute High-Res Interactive Map Tracker */}
           {isTracking && (
-            <MapTracker
+            <EnhancedMapTracker
               progress={trackingProgress}
               speed={speedMultiplier}
               setSpeed={setSpeedMultiplier}
@@ -626,7 +622,7 @@
             />
           )}
 
-          {/* --- Joyful Climax Modal --- */}
+          {/* Celebration Climax Modal */}
           {showCelebration && (
             <CelebrationModal
               data={lastOrderDetails}
@@ -643,25 +639,12 @@
     function CustomizerModal({ item, onClose, onAdd }) {
       const [portion, setPortion] = useState('Feast (Standard)');
       const [spice, setSpice] = useState('Indian Desi Spicy');
-      const [addons, setAddons] = useState({
-        garlicNaan: false,
-        extraDip: false,
-        cheeseLayer: false
-      });
-      const [picklesState, setPicklesState] = useState('normal'); // 'normal', 'remove', 'add_back'
+      const [addons, setAddons] = useState({ garlicNaan: false, extraDip: false, cheeseLayer: false });
+      const [picklesState, setPicklesState] = useState('normal');
       const [instructions, setInstructions] = useState('');
 
-      const portionPricing = {
-        'Regular': 0,
-        'Feast (Standard)': 0,
-        'Jumbo Feast': 60
-      };
-
-      const addonPricing = {
-        garlicNaan: 40,
-        extraDip: 25,
-        cheeseLayer: 50
-      };
+      const portionPricing = { 'Regular': 0, 'Feast (Standard)': 0, 'Jumbo Feast': 60 };
+      const addonPricing = { garlicNaan: 40, extraDip: 25, cheeseLayer: 50 };
 
       const calculatedTotal = item.price + portionPricing[portion] +
         (addons.garlicNaan ? addonPricing.garlicNaan : 0) +
@@ -684,28 +667,21 @@
 
       return (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white border border-[#E8DFC8] w-full max-w-md rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl animate-float">
+          <div className="bg-white border border-[#E8DFC8] w-full max-w-md rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
             
-            {/* Header */}
             <div className="p-4 border-b border-[#F2ECE1] bg-cream-50 flex items-center justify-between">
               <div>
                 <h3 className="font-extrabold text-[#231A12] text-base">{item.name}</h3>
                 <p className="text-xs text-coral-600 font-bold">Customize Your Craving Recipe</p>
               </div>
-              <button 
-                onClick={onClose} 
-                className="w-8 h-8 rounded-full bg-cream-200/80 hover:bg-cream-300 text-[#4A3E31] flex items-center justify-center font-bold text-sm"
-              >
+              <button onClick={onClose} className="w-8 h-8 rounded-full bg-cream-200 hover:bg-cream-300 text-[#4A3E31] flex items-center justify-center font-bold text-sm">
                 ✕
               </button>
             </div>
 
-            {/* Scrollable Customization Body */}
             <div className="p-4 overflow-y-auto space-y-4 text-xs">
-              
-              {/* Portion Selector */}
               <div>
-                <label className="font-extrabold text-[#231A12] block mb-2">🍽️ Choose Your Portion Size:</label>
+                <label className="font-extrabold text-[#231A12] block mb-2">🍽️ Choose Portion Size:</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { label: 'Regular', price: '+₹0' },
@@ -729,7 +705,6 @@
                 </div>
               </div>
 
-              {/* Spice Meter */}
               <div>
                 <label className="font-extrabold text-[#231A12] block mb-2">🌶️ Spice Meter Calibration:</label>
                 <div className="grid grid-cols-2 gap-2">
@@ -759,7 +734,6 @@
                 </div>
               </div>
 
-              {/* Add-ons */}
               <div>
                 <label className="font-extrabold text-[#231A12] block mb-2">✨ Yummy Add-Ons:</label>
                 <div className="space-y-2">
@@ -768,10 +742,7 @@
                     { key: 'extraDip', label: 'Truffle Mayo / Fresh Mint Chutney Dip', price: 25 },
                     { key: 'cheeseLayer', label: 'Glorious Melted Cheese Crown', price: 50 }
                   ].map(addon => (
-                    <label 
-                      key={addon.key} 
-                      className="flex items-center justify-between p-2.5 rounded-2xl border border-[#EAE1CF] bg-white hover:bg-cream-50 cursor-pointer shadow-sm"
-                    >
+                    <label key={addon.key} className="flex items-center justify-between p-2.5 rounded-2xl border border-[#EAE1CF] bg-white hover:bg-cream-50 cursor-pointer shadow-sm">
                       <div className="flex items-center gap-2.5">
                         <input
                           type="checkbox"
@@ -787,14 +758,13 @@
                 </div>
               </div>
 
-              {/* Playful Behavioral Pickle Switch */}
               <div>
                 <label className="font-extrabold text-[#231A12] block mb-2">🥒 The Pickle Dilemma:</label>
                 <div className="grid grid-cols-3 gap-1.5">
                   {[
                     { id: 'normal', text: 'Classic Pickles' },
                     { id: 'remove', text: 'No Pickles Please' },
-                    { id: 'add_back', text: 'Add them back, I changed my mind' }
+                    { id: 'add_back', text: 'Add them back, changed mind' }
                   ].map(opt => (
                     <button
                       key={opt.id}
@@ -812,27 +782,23 @@
                 </div>
               </div>
 
-              {/* Special Instructions */}
               <div>
                 <label className="font-extrabold text-[#231A12] block mb-1.5">👨‍🍳 Special Instructions for Chef:</label>
                 <textarea
                   value={instructions}
                   onChange={e => setInstructions(e.target.value)}
-                  placeholder="Tell the chef your heart's desire (e.g., 'Crispy edges on the naan, extra love in the gravy...')"
+                  placeholder="Tell the chef your heart's desire..."
                   className="w-full bg-cream-50/60 border border-[#EAE1CF] rounded-2xl p-2.5 text-[#382F26] placeholder-[#9E9081] focus:outline-none focus:border-coral-500 text-xs"
                   rows="2"
                 ></textarea>
               </div>
-
             </div>
 
-            {/* Bottom Add Bar */}
             <div className="p-4 border-t border-[#F2ECE1] bg-cream-50 flex items-center justify-between">
               <div>
                 <p className="text-[10px] text-[#7A6E63] font-bold">Total with options:</p>
                 <p className="text-lg font-black text-coral-600">₹{calculatedTotal}</p>
               </div>
-
               <button
                 onClick={handleConfirm}
                 className="bg-coral-500 hover:bg-coral-600 text-white font-black px-6 py-2.5 rounded-2xl text-xs shadow-warm-glow active:scale-95 transition-all"
@@ -850,26 +816,19 @@
     function CartDrawer({ cart, onUpdateQty, subtotal, deliveryFee, platformFee, taxes, originalGrandTotal, deliveryNote, setDeliveryNote, onClose, onPlaceOrder }) {
       return (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex justify-end">
-          <div className="bg-white border-l border-[#EDE4D5] w-full max-w-md h-full flex flex-col justify-between overflow-hidden shadow-2xl animate-float">
+          <div className="bg-white border-l border-[#EDE4D5] w-full max-w-md h-full flex flex-col justify-between overflow-hidden shadow-2xl">
             
-            {/* Header */}
             <div className="p-4 border-b border-[#F2ECE1] bg-cream-50 flex items-center justify-between">
               <div>
                 <h3 className="font-extrabold text-[#231A12] text-base font-serif">Your Craving Bag</h3>
-                <p className="text-xs text-coral-600 font-bold">{cart.length} mouthwatering recipes selected</p>
+                <p className="text-xs text-coral-600 font-bold">{cart.length} dishes ready to satisfy your craving</p>
               </div>
-              <button 
-                onClick={onClose} 
-                className="w-8 h-8 rounded-full bg-cream-200 hover:bg-cream-300 text-[#4A3E31] flex items-center justify-center font-bold text-sm"
-              >
+              <button onClick={onClose} className="w-8 h-8 rounded-full bg-cream-200 hover:bg-cream-300 text-[#4A3E31] flex items-center justify-center font-bold text-sm">
                 ✕
               </button>
             </div>
 
-            {/* Items & Breakdown Scroll */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
-              
-              {/* Item List */}
               <div className="space-y-3">
                 {cart.map((dish, idx) => (
                   <div key={idx} className="bg-cream-50/60 border border-[#EDE4D5] p-3 rounded-2xl flex items-center justify-between shadow-sm">
@@ -893,15 +852,13 @@
                 ))}
               </div>
 
-              {/* Playful Delivery Instructions */}
               <div className="bg-cream-50 p-3 rounded-2xl border border-[#EDE4D5] space-y-2">
                 <p className="font-extrabold text-[#231A12] text-xs">🚪 Delivery Instructions for Courier:</p>
                 <div className="space-y-1.5">
                   {[
                     "Leave outside, ring the bell and do a happy dance",
                     "Don't knock, the dogs will bark and wake the baby",
-                    "Hand directly with a warm smile",
-                    "Leave at door and text 'Feast is served'"
+                    "Hand directly with a warm smile"
                   ].map(note => (
                     <button
                       key={note}
@@ -918,7 +875,6 @@
                 </div>
               </div>
 
-              {/* 100% Happy Hour Voucher Card */}
               <div className="p-3.5 rounded-2xl bg-sage-50 border-2 border-dashed border-sage-500 text-center space-y-1 shadow-sm">
                 <span className="text-[10px] font-black tracking-wider text-sage-600 uppercase bg-sage-100 px-2 py-0.5 rounded-full">
                   Happy Hour Voucher Auto-Applied
@@ -927,43 +883,24 @@
                 <p className="text-[10px] text-sage-600 font-medium">100% Craving Subsidy • Zero Real Money • Zero Real Calories</p>
               </div>
 
-              {/* Transparent Bill Breakdown */}
               <div className="border-t border-[#F2ECE1] pt-3 space-y-1.5 text-[#6B5E51]">
-                <div className="flex justify-between">
-                  <span>Food Item Total</span>
-                  <span className="font-bold text-[#231A12]">₹{subtotal}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Standard Delivery Fee</span>
-                  <span className="font-bold text-[#231A12]">₹{deliveryFee}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Platform Fee</span>
-                  <span className="font-bold text-[#231A12]">₹{platformFee}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Taxes (GST 5%)</span>
-                  <span className="font-bold text-[#231A12]">₹{taxes}</span>
-                </div>
-
+                <div className="flex justify-between"><span>Food Item Total</span><span className="font-bold text-[#231A12]">₹{subtotal}</span></div>
+                <div className="flex justify-between"><span>Standard Delivery Fee</span><span className="font-bold text-[#231A12]">₹{deliveryFee}</span></div>
+                <div className="flex justify-between"><span>Platform Fee</span><span className="font-bold text-[#231A12]">₹{platformFee}</span></div>
+                <div className="flex justify-between"><span>Taxes (GST 5%)</span><span className="font-bold text-[#231A12]">₹{taxes}</span></div>
                 <div className="flex justify-between text-[#231A12] font-extrabold pt-1.5 border-t border-[#F2ECE1]">
-                  <span>Original Bill Value</span>
-                  <span className="line-through text-[#9E9081]">₹{originalGrandTotal}</span>
+                  <span>Original Bill Value</span><span className="line-through text-[#9E9081]">₹{originalGrandTotal}</span>
                 </div>
-
                 <div className="flex justify-between text-sage-600 font-black text-base pt-1">
-                  <span>Net Amount Payable:</span>
-                  <span className="text-emerald-600">₹0.00 (Free)</span>
+                  <span>Net Amount Payable:</span><span className="text-emerald-600">₹0.00 (Free)</span>
                 </div>
               </div>
-
             </div>
 
-            {/* CTA Order Button */}
             <div className="p-4 border-t border-[#F2ECE1] bg-white">
               <button
                 onClick={onPlaceOrder}
-                className="w-full bg-gradient-to-r from-coral-500 to-coral-600 hover:from-coral-600 hover:to-coral-700 text-white font-black py-3.5 rounded-2xl text-sm shadow-warm-glow active:scale-95 transition-all flex items-center justify-center gap-2 animate-pulse-soft"
+                className="w-full bg-gradient-to-r from-coral-500 to-coral-600 hover:from-coral-600 hover:to-coral-700 text-white font-black py-3.5 rounded-2xl text-sm shadow-warm-glow active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 <span>🛵 Place Craving Order (₹0.00 Free)</span>
               </button>
@@ -974,35 +911,87 @@
       );
     }
 
-    // --- Interactive Leaflet.js Map Tracker Component ---
-    function MapTracker({ progress, speed, setSpeed, showToast }) {
+    // --- ENHANCED 2-MINUTE INTERACTIVE LIVE MAP TRACKER ---
+    function EnhancedMapTracker({ progress, speed, setSpeed, showToast }) {
       const mapContainerRef = useRef(null);
       const leafletMapRef = useRef(null);
       const riderMarkerRef = useRef(null);
+      const activePolylineRef = useRef(null);
+      const completedPolylineRef = useRef(null);
 
+      // Remaining Time & Distance Calculations
+      const remainingSeconds = Math.max(0, Math.ceil(REAL_TIME_DURATION_SECONDS * (1 - progress / 100)));
+      const minutes = Math.floor(remainingSeconds / 60);
+      const seconds = remainingSeconds % 60;
+      const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+      // Total distance ~2.8 km
+      const totalKm = 2.8;
+      const remainingKm = (totalKm * (1 - progress / 100));
+      const distanceLabel = remainingKm > 0.4 ? `${remainingKm.toFixed(1)} km away` : `${Math.round(remainingKm * 1000)} meters away`;
+
+      // Live Speed calculation (slows on turns, fast on IRR)
+      let currentSpeedKmH = Math.round(32 + Math.sin(progress / 5) * 8);
+      if (progress < 10) currentSpeedKmH = 22;
+      if (progress > 85) currentSpeedKmH = 18;
+
+      // Current Waypoint Street Resolution
+      const totalSegments = HIGH_RES_ROUTE.length - 1;
+      const normalized = (progress / 100) * totalSegments;
+      const currentIndex = Math.min(Math.floor(normalized), totalSegments - 1);
+      const segmentProgress = normalized - currentIndex;
+      const currentStreet = HIGH_RES_ROUTE[currentIndex]?.street || "Cruising through Bengaluru roads";
+
+      // Milestone text description
+      let stageText = "Chef is sealing your piping hot food into thermal insulated wrap...";
+      if (progress >= 15 && progress < 35) {
+        stageText = "Driver Ramesh picked up your feast! Helmet on, scooter humming...";
+      } else if (progress >= 35 && progress < 60) {
+        stageText = "Zipping smoothly on Intermediate Ring Road (breezy 38 km/h)...";
+      } else if (progress >= 60 && progress < 85) {
+        stageText = "Crossing Domlur Flyover & entering 100 Feet Road, Indiranagar...";
+      } else if (progress >= 85) {
+        stageText = "Ramesh is on Defence Colony lane! Prepare your appetite...";
+      }
+
+      // Initialize Leaflet Map
       useEffect(() => {
         if (!mapContainerRef.current) return;
 
-        // Initialize Leaflet map with smooth warm tiles
         const map = L.map(mapContainerRef.current, {
           zoomControl: false,
           attributionControl: false
-        }).setView([12.956, 77.633], 13);
+        }).setView([HIGH_RES_ROUTE[0].lat, HIGH_RES_ROUTE[0].lng], 14);
 
         leafletMapRef.current = map;
 
-        // Carto Voyager warm clean map tiles
+        // Warm Carto Voyager tiles
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
           maxZoom: 19
         }).addTo(map);
 
-        // Restaurant Pin
+        // Entire Route Polyline (dashed gray)
+        const latLngs = HIGH_RES_ROUTE.map(pt => [pt.lat, pt.lng]);
+        L.polyline(latLngs, {
+          color: '#E2DACB',
+          weight: 6,
+          opacity: 0.8
+        }).addTo(map);
+
+        // Active Traveled Polyline (vibrant coral)
+        completedPolylineRef.current = L.polyline([latLngs[0]], {
+          color: '#FA5838',
+          weight: 6,
+          opacity: 0.95
+        }).addTo(map);
+
+        // Origin Restaurant Pin
         const restIcon = L.divIcon({
           html: '<div style="background:#FA5838;padding:8px;border-radius:50%;border:3px solid white;box-shadow:0 6px 14px rgba(250,88,56,0.4);font-size:16px;text-align:center;">🍳</div>',
           className: 'custom-pin',
           iconSize: [36, 36]
         });
-        L.marker(BENGALURU_ROUTE[0], { icon: restIcon }).addTo(map).bindPopup("Chef's Kitchen (Koramangala)");
+        L.marker([HIGH_RES_ROUTE[0].lat, HIGH_RES_ROUTE[0].lng], { icon: restIcon }).addTo(map).bindPopup("Chef's Kitchen (Koramangala)");
 
         // Destination Home Pin
         const destIcon = L.divIcon({
@@ -1010,102 +999,147 @@
           className: 'custom-pin',
           iconSize: [36, 36]
         });
-        L.marker(BENGALURU_ROUTE[BENGALURU_ROUTE.length - 1], { icon: destIcon }).addTo(map).bindPopup("Your Cozy Home (Indiranagar)");
+        L.marker([HIGH_RES_ROUTE[HIGH_RES_ROUTE.length - 1].lat, HIGH_RES_ROUTE[HIGH_RES_ROUTE.length - 1].lng], { icon: destIcon }).addTo(map).bindPopup("Your Home (Indiranagar)");
 
-        // Route Polyline
-        L.polyline(BENGALURU_ROUTE, {
-          color: '#FA5838',
-          weight: 5,
-          opacity: 0.85,
-          dashArray: '8, 8'
-        }).addTo(map);
-
-        // Electric Scooter Marker
+        // Animated Electric Scooter Icon with Pulsing Beacon
         const scooterIcon = L.divIcon({
-          html: '<div style="background:#231A12;color:white;padding:7px;border-radius:50%;border:3px solid #FFC542;box-shadow:0 6px 16px rgba(0,0,0,0.3);font-size:16px;text-align:center;">🛵</div>',
+          html: `
+            <div class="relative flex items-center justify-center">
+              <div class="absolute w-12 h-12 rounded-full bg-coral-500/30 pulse-beacon"></div>
+              <div style="background:#231A12;color:white;padding:8px;border-radius:50%;border:3px solid #FFC542;box-shadow:0 6px 16px rgba(0,0,0,0.4);font-size:18px;text-align:center;">
+                🛵
+              </div>
+            </div>
+          `,
           className: 'custom-scooter',
-          iconSize: [38, 38]
+          iconSize: [44, 44]
         });
-        riderMarkerRef.current = L.marker(BENGALURU_ROUTE[0], { icon: scooterIcon }).addTo(map);
+        riderMarkerRef.current = L.marker([HIGH_RES_ROUTE[0].lat, HIGH_RES_ROUTE[0].lng], { icon: scooterIcon }).addTo(map);
 
         return () => {
           map.remove();
         };
       }, []);
 
-      // Interpolate rider location
+      // Real-time Coordinate Interpolation & Camera Following
       useEffect(() => {
         if (!riderMarkerRef.current || !leafletMapRef.current) return;
 
-        const totalSegments = BENGALURU_ROUTE.length - 1;
-        const normalized = (progress / 100) * totalSegments;
-        const index = Math.min(Math.floor(normalized), totalSegments - 1);
-        const segmentProgress = normalized - index;
+        const startPt = HIGH_RES_ROUTE[currentIndex];
+        const endPt = HIGH_RES_ROUTE[currentIndex + 1] || startPt;
 
-        const start = BENGALURU_ROUTE[index];
-        const end = BENGALURU_ROUTE[index + 1] || start;
+        const currentLat = startPt.lat + (endPt.lat - startPt.lat) * segmentProgress;
+        const currentLng = startPt.lng + (endPt.lng - startPt.lng) * segmentProgress;
 
-        const currentLat = start[0] + (end[0] - start[0]) * segmentProgress;
-        const currentLng = start[1] + (end[1] - start[1]) * segmentProgress;
-
+        // Move Scooter Marker
         riderMarkerRef.current.setLatLng([currentLat, currentLng]);
+
+        // Update traveled polyline
+        if (completedPolylineRef.current) {
+          const traveledPoints = HIGH_RES_ROUTE.slice(0, currentIndex + 1).map(p => [p.lat, p.lng]);
+          traveledPoints.push([currentLat, currentLng]);
+          completedPolylineRef.current.setLatLngs(traveledPoints);
+        }
+
+        // Smooth camera follow every 5%
+        if (Math.round(progress) % 4 === 0) {
+          leafletMapRef.current.panTo([currentLat, currentLng], { animate: true, duration: 0.8 });
+        }
       }, [progress]);
 
-      // Dynamic milestone copy
-      let stageText = "Chef is putting love into the packaging...";
-      if (progress >= 25 && progress < 50) {
-        stageText = "Driver Ramesh just picked up your feast!";
-      } else if (progress >= 50 && progress < 80) {
-        stageText = "Electric scooter is zipping through 100ft road traffic...";
-      } else if (progress >= 80) {
-        stageText = "Turning onto your street! Prepare your appetite...";
-      }
-
       return (
-        <div className="absolute inset-0 z-40 bg-white flex flex-col">
+        <div className="absolute inset-0 z-40 bg-white flex flex-col animate-float">
           
-          {/* Header */}
-          <div className="p-3.5 bg-white/95 backdrop-blur border-b border-[#EDE4D5] z-10 flex items-center justify-between shadow-sm">
+          {/* Top Live Dashboard Bar */}
+          <div className="p-3 bg-white/95 backdrop-blur-md border-b border-[#EDE4D5] z-10 flex items-center justify-between shadow-sm">
             <div>
-              <p className="text-[10px] text-coral-600 font-extrabold uppercase tracking-wider">LIVE COURIER TRACKING</p>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <p className="text-[10px] text-coral-600 font-extrabold uppercase tracking-wider">LIVE COURIER TRACKING</p>
+              </div>
               <h2 className="text-sm font-black text-[#231A12]">Ramesh on Ather 450X</h2>
             </div>
 
-            {/* Fast Forward Speed Button */}
-            <button
-              onClick={() => setSpeed(s => s === 1 ? 2 : s === 2 ? 5 : 1)}
-              className="bg-honey-50 border border-honey-500/40 text-honey-600 font-black px-3 py-1.5 rounded-xl text-xs hover:bg-honey-100 transition-all flex items-center gap-1 shadow-sm"
-            >
-              <span>⚡ Fast-Forward</span>
-              <span>{speed}x</span>
-            </button>
-          </div>
-
-          {/* Real Leaflet Map */}
-          <div className="flex-1 w-full relative">
-            <div ref={mapContainerRef} className="w-full h-full"></div>
-
-            {/* Floating Live Progress Status Card */}
-            <div className="absolute top-4 left-4 right-4 z-[500] bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-[#EDE4D5] shadow-pillowy-lg">
-              <div className="flex justify-between items-center text-xs mb-1.5">
-                <span className="font-extrabold text-[#231A12]">Delivery Progress</span>
-                <span className="font-black text-coral-600">{Math.round(progress)}%</span>
-              </div>
-              <div className="w-full bg-cream-200 h-2.5 rounded-full overflow-hidden">
-                <div 
-                  className="bg-gradient-to-r from-honey-500 via-coral-500 to-coral-600 h-full transition-all duration-150 rounded-full"
-                  style={{ width: `${progress}%` }}
-                ></div>
-              </div>
-              <p className="text-xs text-[#4A3E31] font-bold mt-2 flex items-center gap-1.5">
-                <span>📍</span>
-                <span>{stageText}</span>
-              </p>
+            {/* Speed Multipliers (1x Real 2 Min, 2x, 5x, 10x) */}
+            <div className="flex items-center gap-1 bg-cream-100 p-1 rounded-xl border border-[#E2DACB]">
+              <span className="text-[10px] font-bold text-[#7A6E63] px-1">Speed:</span>
+              {[1, 2, 5, 10].map(s => (
+                <button
+                  key={s}
+                  onClick={() => setSpeed(s)}
+                  className={`px-2 py-1 rounded-lg text-[10px] font-black transition-all ${
+                    speed === s
+                      ? 'bg-coral-500 text-white shadow-sm'
+                      : 'text-[#5C4F41] hover:bg-cream-200'
+                  }`}
+                >
+                  {s === 1 ? '1x (2m)' : `${s}x`}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Bottom Driver Profile Card */}
-          <div className="p-4 bg-white border-t border-[#EDE4D5] flex items-center justify-between shadow-pillowy">
+          {/* Interactive Map Area */}
+          <div className="flex-1 w-full relative">
+            <div ref={mapContainerRef} className="w-full h-full"></div>
+
+            {/* Floating Live Trip Metrics Overlay (Time & Distance) */}
+            <div className="absolute top-3 left-3 right-3 z-[500] space-y-2">
+              
+              {/* ETA & Distance Glass Card */}
+              <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-[#EDE4D5] shadow-pillowy-lg flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] text-[#7A6E63] font-bold uppercase tracking-wider">Estimated Arrival</p>
+                  <p className="text-xl font-black text-coral-600 tracking-tight font-mono">{formattedTime}</p>
+                </div>
+
+                <div className="h-8 w-px bg-[#EDE4D5]"></div>
+
+                <div>
+                  <p className="text-[10px] text-[#7A6E63] font-bold uppercase tracking-wider">Remaining Distance</p>
+                  <p className="text-sm font-black text-[#231A12]">{distanceLabel}</p>
+                </div>
+
+                <div className="h-8 w-px bg-[#EDE4D5]"></div>
+
+                <div>
+                  <p className="text-[10px] text-[#7A6E63] font-bold uppercase tracking-wider">Current Speed</p>
+                  <p className="text-sm font-black text-emerald-600">{currentSpeedKmH} km/h</p>
+                </div>
+              </div>
+
+              {/* Live Street & Milestone Banner */}
+              <div className="bg-[#231A12]/90 backdrop-blur-md px-3.5 py-2 rounded-xl text-white shadow-md flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 overflow-hidden pr-2">
+                  <span className="text-coral-400 text-sm animate-bounce">📍</span>
+                  <div className="truncate">
+                    <p className="text-[10px] text-honey-400 font-bold uppercase truncate">{currentStreet}</p>
+                    <p className="text-[11px] font-medium text-stone-200 truncate">{stageText}</p>
+                  </div>
+                </div>
+                <span className="text-xs font-black text-honey-400 bg-white/10 px-2 py-0.5 rounded-md whitespace-nowrap">
+                  {Math.round(progress)}%
+                </span>
+              </div>
+
+            </div>
+
+            {/* Recenter Button */}
+            <button
+              onClick={() => {
+                if (leafletMapRef.current && riderMarkerRef.current) {
+                  leafletMapRef.current.setView(riderMarkerRef.current.getLatLng(), 15, { animate: true });
+                }
+              }}
+              className="absolute bottom-3 right-3 z-[500] bg-white hover:bg-cream-50 text-[#231A12] font-bold text-xs p-2.5 rounded-2xl shadow-pillowy border border-[#EDE4D5] flex items-center gap-1.5 active:scale-95 transition-all"
+            >
+              <span>🎯 Center Rider</span>
+            </button>
+
+          </div>
+
+          {/* Bottom Driver Card */}
+          <div className="p-3.5 bg-white border-t border-[#EDE4D5] flex items-center justify-between shadow-pillowy">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 rounded-2xl bg-cream-100 border border-[#EDE4D5] flex items-center justify-center text-2xl shadow-sm">
                 👨‍✈️
@@ -1115,12 +1149,12 @@
                   <h4 className="font-black text-[#231A12] text-xs">Ramesh Kumar</h4>
                   <span className="text-[10px] bg-honey-100 text-honey-600 px-1.5 py-0.5 rounded font-black">★ 4.9</span>
                 </div>
-                <p className="text-[11px] text-[#7A6E63] font-medium">Electric Scooter • KA-03-HA-4412</p>
+                <p className="text-[11px] text-[#7A6E63] font-medium">Ather 450X (Electric) • KA-03-HA-4412</p>
               </div>
             </div>
 
             <button
-              onClick={() => showToast("📞 Ramesh: 'I am right at your doorstep! Enjoy this 100% guilt-free feast!'")}
+              onClick={() => showToast(`📞 Ramesh: "Cruising along ${currentStreet}! I will be there in about ${minutes}m ${seconds}s!"`)}
               className="bg-cream-100 hover:bg-cream-200 text-[#382F26] px-3.5 py-2 rounded-xl text-xs font-bold border border-[#E2DACB] flex items-center gap-1.5 transition-all shadow-sm"
             >
               <span>📞</span>
@@ -1149,18 +1183,17 @@ Enjoyed with Cravingly!`;
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-white border border-[#E8DFC8] w-full max-w-sm rounded-3xl p-6 text-center space-y-4 shadow-2xl animate-float">
             
-            <div className="w-20 h-20 mx-auto rounded-3xl bg-sage-50 border-2 border-sage-500/30 flex items-center justify-center text-4xl shadow-inner animate-pulse-soft">
+            <div className="w-20 h-20 mx-auto rounded-3xl bg-sage-50 border-2 border-sage-500/30 flex items-center justify-center text-4xl shadow-inner">
               ✨🍽️
             </div>
 
             <div className="space-y-1.5">
               <h2 className="text-xl font-black text-[#231A12] font-serif">Your Craving Has Been Satisfied!</h2>
               <p className="text-xs text-[#6B5E51] leading-relaxed">
-                You experienced the full, delicious psychological joy of choosing toppings, ordering, and tracking your rider with <strong className="text-sage-600">zero money spent</strong> and <strong className="text-coral-600">zero calories gained</strong>.
+                You experienced the full, delicious psychological joy of choosing toppings, ordering, and watching your rider navigate Bengaluru with <strong className="text-sage-600">zero money spent</strong> and <strong className="text-coral-600">zero calories gained</strong>.
               </p>
             </div>
 
-            {/* Scorecard */}
             <div className="grid grid-cols-2 gap-2.5 py-1">
               <div className="bg-sage-50 border border-sage-200 p-3 rounded-2xl text-center">
                 <span className="text-[10px] text-sage-600 font-extrabold uppercase">Money Saved</span>
@@ -1175,7 +1208,6 @@ Enjoyed with Cravingly!`;
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="space-y-2 pt-2">
               <button
                 onClick={onReset}
